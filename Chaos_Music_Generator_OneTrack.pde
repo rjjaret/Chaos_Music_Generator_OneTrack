@@ -23,27 +23,16 @@ ArrayList<PVector> points = new ArrayList<PVector>();
 
 int n;//counts iterations of program
 
-float r; //color
-float g;
-float bl;
-
-float cw = 0; //color changer
-float dcw;
- 
-float R = .01; //rotation 
-
-float frequadjust = 37; //scaler to put freqencies in audible srange
 int currentToneStart = 0; 
  
- Note note1 = null;
- Note note2 = null;
-    
- 
+Note note1 = null;
+Note note2 = null;
+     
 void setup()
 {
     // Creating the output window
     // and setting up the OPENGL renderer
-    size(1080, 720, P3D);
+    //size(1080, 720, P3D);
  
     // Configure Midi Buses
     //print(MidiBus.availableOutputs()); // List all available Midi devices on STDOUT. This will show each device's index and name.
@@ -68,11 +57,12 @@ void draw()
 {
     int intervalInMilliseconds = 600;
     int durationInMilliseconds = 550;
+    int velocity = 70;
     
     background(0);
  
     // Implementation of the differential equations 
-    float dt = 0.01; //timestep (sort of aribtrary) //<>//
+    float dt = 0.01; //timestep (sort of aribtrary)
     float dx = (a * (y - x)) * dt;
     float dy = (x * (b - z) - y) * dt;
     float dz = (x * y - c * z) * dt;
@@ -83,43 +73,16 @@ void draw()
     n++;
     
     //println(n+": "+x+", "+y+", "+z);
- 
-    // Adding the position vectors to points ArrayList
-    points.add(new PVector(x, y, z));
-    
-    // start position
-    translate(width/2, height/2, 0);
-    //rotateY(R);
-    
-    scale(6);
-    stroke(255);
-    noFill();
-    
-  //choose color
-    r=cw;
-    g=cw;
-    bl=255;
-    
-    // Beginning plotting of points
-  
-    beginShape(POINTS);
-    for (int i = 0; i<points.size(); i++) {
-        dcw = points.size()-i;
-        cw = 255-dcw;
-        stroke(cw,cw,255);
-        vertex(points.get(i).x, points.get(i).y, points.get(i).z); // plotting the vertices
+   
+    int millisecs = millis();
+     
+    int stopTimeMilliseconds = currentToneStart + durationInMilliseconds;
+    if (millisecs > stopTimeMilliseconds)
+    {
+        if (note1 != null) stopNote(note1, midiBus1);
+        if (note2 != null) stopNote(note2, midiBus2);      
     }
-    endShape(); 
-   
-  int millisecs = millis();
-   
-  int stopTimeMilliseconds = currentToneStart + durationInMilliseconds;
-  if (millisecs > stopTimeMilliseconds)
-  {
-      if (note1 != null) stopNote(note1, midiBus1);
-      if (note2 != null) stopNote(note2, midiBus2);      
-  }
-    
+      
    
    if (millisecs > intervalInMilliseconds + currentToneStart)
    {           
@@ -127,13 +90,12 @@ void draw()
      float dist= sqrt(pow(x - listX, 2) + pow(y - listY,2) + pow(z - listZ,2));
      int intMidiNoteValue = normalizeToRange(dist, .825, 33.34, 42, 100);
 
-     intMidiNoteValue = normalizeToRange(dist, .825, 33.34, 64, 34);
-     note2 = playNote(1, intMidiNoteValue, 70, midiBus2);
+     note2 = playNote(1, intMidiNoteValue, velocity, midiBus2);
 
      println ("dist: " + dist);
      println ("intMidiNote: " + intMidiNoteValue);
      
-     // little helpers to help determine range of distances for scaling (normalizeToRange)
+     // helpers to help determine range of distances for scaling (normalizeToRange)
      if (dist > highParam)
        highParam = dist;
 
